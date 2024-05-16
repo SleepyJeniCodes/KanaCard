@@ -6,7 +6,6 @@ Welcome to the KanaCards, Japanese Learning Website project! This web applicatio
 
 - **Flashcards for Characters**: Practice and master hiragana, katakana, and kanji with interactive flashcards.
 - **Word Learning**: Explore and learn common Japanese words and vocabulary.
-- **User Authentication**: Secure registration and login system to track learning progress.
 - **Responsive Design**: Enjoy a seamless learning experience on all devices.
 
 ## Technologies Used
