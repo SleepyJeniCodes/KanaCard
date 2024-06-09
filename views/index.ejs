@@ -9,6 +9,7 @@
 </head>
 
 <body id="app">
+  <!-- Form for submitting answers -->
   <form class="container" action="/submit" method="post">
     <div class="horizontal-container">
       <h3>
@@ -19,26 +20,35 @@
       </h3>
 
     </div>
-
+    <!-- Displays Japanese word to translate -->
     <h1 id="japaneseWord">
       <%=question.character %>
     </h1>
+    <!-- Container for answer input-->
     <div class="answer-container">
       <input type="text" name="answer" id="userInput" placeholder="Enter the translation" autofocus autocomplete="off">
 
     </div>
+
+    <!-- Submit Button -->
     <button type="submit">SUBMIT<% if(locals.wasCorrect){ %>
+        <!-- Displays checkmark if answer was correct -->
         <span class="checkmark">✔</span>
         <% } else if (locals.wasCorrect===false) { %>
+          <!-- Displays cross mark if answer was incorrect -->
           <span class="cross" id="error">✖</span>
           <% } %>
     </button>
 
   </form>
+
+  <!-- JavaScript section -->
   <script>
+    // Retrieves value of 'wasCorrect' from server-side
     var wasCorrect = "<%= locals.wasCorrect %>";
     console.log(wasCorrect)
     if (wasCorrect === "false") {
+      // If answer was incorrect, display final score and restart option
       alert('Game over! Final best score: <%= locals.totalScore %>');
       document.getElementById("app").innerHTML = '<a href="/" class="restart-button">Restart</a>'
     }
