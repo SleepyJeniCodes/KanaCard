@@ -18,8 +18,17 @@
           <%= locals.totalScore ? totalScore : "0" %>
         </span>
       </h3>
-
     </div>
+
+    <!-- Dropdown for selecting question set -->
+    <div class="dropdown-container">
+      <label for="charset">Select Character Set:</label>
+      <select name="charset" id="charset" onchange="document.getElementById('quizForm').submit();">
+        <option value="hiragana" <%= selectedCharset === 'hiragana' ? 'selected' : '' %>>Hiragana</option>
+        <option value="katakana" <%= selectedCharset === 'katakana' ? 'selected' : '' %>>Katakana</option>
+      </select>
+    </div>
+
     <!-- Displays Japanese word to translate -->
     <h1 id="japaneseWord">
       <%=question.character %>
