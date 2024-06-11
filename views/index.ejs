@@ -4,13 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Japanese Quiz</title>
+  <title>KanaCard</title>
   <link rel="stylesheet" href="/styles/main.css">
 </head>
 
 <body id="app">
-  <!-- Form for submitting answers -->
-  <form class="container" action="/submit" method="post">
+  <!-- Form for submitting answers and selecting character set -->
+  <form class="container" action="/" method="post" id="quizForm">
     <div class="horizontal-container">
       <h3>
         Total Score:
@@ -22,47 +22,46 @@
 
     <!-- Dropdown for selecting question set -->
     <div class="dropdown-container">
-      <label for="charset">Select Character Set:</label>
       <select name="charset" id="charset" onchange="document.getElementById('quizForm').submit();">
+        <option value="" disabled selected>Please select what set you would like to be quizzed on</option>
         <option value="hiragana" <%= selectedCharset === 'hiragana' ? 'selected' : '' %>>Hiragana</option>
         <option value="katakana" <%= selectedCharset === 'katakana' ? 'selected' : '' %>>Katakana</option>
       </select>
     </div>
 
+    <% if (question) { %>
     <!-- Displays Japanese word to translate -->
     <h1 id="japaneseWord">
-      <%=question.character %>
+      <%= question.character %>
     </h1>
-    <!-- Container for answer input-->
+    <!-- Container for answer input -->
     <div class="answer-container">
       <input type="text" name="answer" id="userInput" placeholder="Enter the translation" autofocus autocomplete="off">
-
     </div>
 
     <!-- Submit Button -->
-    <button type="submit">SUBMIT<% if(locals.wasCorrect){ %>
-        <!-- Displays checkmark if answer was correct -->
-        <span class="checkmark">✔</span>
-        <% } else if (locals.wasCorrect===false) { %>
-          <!-- Displays cross mark if answer was incorrect -->
-          <span class="cross" id="error">✖</span>
-          <% } %>
+    <button type="submit">SUBMIT
+      <% if (locals.wasCorrect) { %>
+      <!-- Displays checkmark if answer was correct -->
+      <span class="checkmark">✔</span>
+      <% } else if (locals.wasCorrect === false) { %>
+      <!-- Displays cross mark if answer was incorrect -->
+      <span class="cross" id="error">✖</span>
+      <% } %>
     </button>
-
+    <% } %>
   </form>
 
   <!-- JavaScript section -->
   <script>
     // Retrieves value of 'wasCorrect' from server-side
     var wasCorrect = "<%= locals.wasCorrect %>";
-    console.log(wasCorrect)
+    console.log(wasCorrect);
     if (wasCorrect === "false") {
       // If answer was incorrect, display final score and restart option
       alert('Game over! Final best score: <%= locals.totalScore %>');
-      document.getElementById("app").innerHTML = '<a href="/" class="restart-button">Restart</a>'
+      document.getElementById("app").innerHTML = '<a href="/" class="restart-button">Restart</a>';
     }
-
-
   </script>
 </body>
 

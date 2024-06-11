@@ -17,64 +17,80 @@ const db = new pg.Client({
 
 db.connect();
 
-//Queries the database for quiz questions and populates the 'quiz' array
-//let quiz = [];
-//db.query("SELECT * FROM hiragana", (err, res) => {
-  //if (err) {
-    //console.error("Error executing query", err.stack);
-  //} else {
-    //quiz = res.rows; //stores the quiz questions retrieved from the database
-  //}
-  //db.end();
-//});
-
+let quiz = [];
+let currentQuestion = {};
 let totalCorrect = 0;
+let selectedCharset = ""; //default to empty
+
+//queries data based off of selected set
+async function fetchSet(charset) {
+  return new Promise((resolve, reject) => {
+    db.query(`SELECT * FROM ${charset}`, (err, res) => {
+      if (err) {
+        console.error("Error executing query", err.stack);
+        reject(err);
+      } else {
+        resolve(res.rows); //stores the quiz questions retrieved from the database
+      }
+    })
+  })
+};
+
 
 //Middleware
 app.use(bodyParser.urlencoded({ extended: true })); //parses URL-encoded bodies
 app.use(express.static("public")); //serves static files from 'public' directory
 
-let currentQuestion = {};
-
 //GET home page
 app.get("/", async (req, res) => {
-    const charset = req.query.charset || 'hiragana' //default to hiragana if no charset is selected
     totalCorrect = 0; //resets the total correct count for a new session
-    await nextQuestion(charset); //fetches next question asynchronously
+    await nextQuestion(); //fetches next question asynchronously
     console.log(currentQuestion); //logs current question to the console
     res.render("index.ejs", { 
-      question: currentQuestion,
-      selectedCharset: charset,
+      question: null,
+      selectedCharset,
       totalScore: totalCorrect
      }); //renders the index.ejs template
   });
 
 // POST a new post
-app.post("/submit", async (req, res) => {
-    let answer = req.body.answer.trim(); //extracts and trims the submitted answer
-    let isCorrect = false; //flag to track whether the answer is correct
-    if (currentQuestion.romaji.toLowerCase() === answer.toLowerCase()) {
-      totalCorrect++; //increments the total correct count if answer is correct
-      console.log(totalCorrect); //logs total correct count to console
-      isCorrect = true;
-    }
-
-    const charset = req.body.charset || 'hiragana'; // Default to hiragana if no charset is selected
-    await nextQuestion(charset); // Fetches the next question based on selected charset
+app.post("/", async (req, res) => {
+  if (req.body.charset && req.body.charset !== selectedCharset) {
+    selectedCharset = req.body.charset; // update selected character set
+    quiz = await fetchSet(selectedCharset); // fetch new set of questions
+    totalCorrect = 0; // reset the score
+    await nextQuestion(); // fetch the next question
+    
     res.render("index.ejs", {
         question: currentQuestion,
-        wasCorrect: isCorrect, //passes whether the answer was correct to the ejs file
-        totalScore: totalCorrect, //passes tht total correct count to the template
-        selectedCharset: charset // Passes the selected charset to the template
-    });
-});
+        wasCorrect: undefined, // clear the wasCorrect flag for new set selection
+        totalScore: totalCorrect, // reset the total score
+        selectedCharset // passes the selected charset to the template
+        });
+      } else if (req.body.answer) {
+        let answer = req.body.answer.trim(); // extracts and trims the submitted answer
+        let isCorrect = false; // flag to track whether the answer is correct
+        if (currentQuestion.romaji.toLowerCase() === answer.toLowerCase()) {
+          totalCorrect++; // increments the total correct count if answer is correct
+          isCorrect = true;
+        }
+        await nextQuestion(); // fetches the next question
+        console.log(currentQuestion);
+        res.render("index.ejs", {
+          question: currentQuestion,
+          wasCorrect: isCorrect, // passes whether the answer was correct to the ejs file
+          totalScore: totalCorrect, // passes the total correct count to the template
+          selectedCharset // passes the selected charset to the template
+          });
+        } else {
+          res.redirect('/'); // redirect to home if neither charset nor answer is present
+          }
+        });
 
 //function to fetch the next question
-async function nextQuestion(charset) {
-    const query = `SELECT * FROM ${charset}`;
-    const { rows } = await db.query(query);
-    const randomCharacter = rows[Math.floor(Math.random() * rows.length)]; //selects a random question from the 'quiz' array
-    currentQuestion = randomCharacter; //sets the current question to the randomly selected question
+async function nextQuestion() {
+    const randomJapanese = quiz[Math.floor(Math.random() * quiz.length)]; //selects a random question from the 'quiz' array
+    currentQuestion = randomJapanese; //sets the current question to the randomly selected question
   }
 
 app.listen(port, () => {
